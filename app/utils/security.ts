@@ -1,4 +1,4 @@
-// Simple in-memory rate limiter
+
 const rateLimiter = new Map<string, { count: number; resetTime: number }>();
 
 export function rateLimit(ip: string, maxRequests: number = 10, windowMs: number = 60000): boolean {

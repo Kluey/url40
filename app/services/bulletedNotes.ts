@@ -26,7 +26,8 @@ export const useGetBulletedNotesMutation = () => {
 
       const data = await response.json();
       return { data, error: null };
-    } catch (error) {
+    } catch (networkError) {
+      console.error('Network error:', networkError);
       return { 
         data: null, 
         error: { 

@@ -1,9 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import OpenAI from 'openai';
+import { HfInference } from '@huggingface/inference';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -17,23 +15,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a helpful assistant that creates well-structured bullet point notes. Format your response as clear, concise bullet points using • symbols. Focus on key takeaways and actionable information.'
-        },
-        {
-          role: 'user',
-          content: `Create structured bullet point notes from this summary:\n\n${summary}`
-        }
-      ],
-      max_tokens: 200,
-      temperature: 0.2,
+    const prompt = `Convert this summary into structured bullet point notes with clear formatting:
+
+Summary: ${summary}
+
+Notes:
+• Key point 1
+• Key point 2
+• Key point 3
+
+Structured Notes:`;
+
+    const response = await hf.textGeneration({
+      model: 'microsoft/DialoGPT-medium',
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: 300,
+        temperature: 0.2,
+        do_sample: true,
+        return_full_text: false,
+      }
     });
 
-    const notes = response.choices[0]?.message?.content?.trim();
+    let notes = response.generated_text?.trim();
+    
+    if (!notes || notes.length < 20) {
+      const sentences = summary.split(/[.!?]+/).filter((s: string) => s.trim().length > 10);
+      notes = sentences.slice(0, 5).map((sentence: string) => `• ${sentence.trim()}`).join('\n');
+    }
+
     res.status(200).json({ notes });
   } catch (error) {
     console.error('Error fetching notes:', error);

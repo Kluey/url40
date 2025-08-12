@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Circle, Dot, ChevronRight, Star, Quote, CheckCircle, Info, Target, FileText } from 'lucide-react';
+import { BookOpen, Circle, Dot, Star, Quote, CheckCircle, Info, Target, FileText } from 'lucide-react';
 
 interface NoteRendererProps {
   content: string;
@@ -23,15 +23,13 @@ export const NoteRenderer: React.FC<NoteRendererProps> = ({ content }) => {
   const renderLine = (line: string, index: number) => {
     const trimmedLine = line.trim();
     
-    // Skip empty lines
     if (!trimmedLine) return null;
     
-    // Handle main headers (## or ###)
     if (trimmedLine.match(/^#{2,3}\s+/)) {
       const headerText = trimmedLine.replace(/^#{2,3}\s+/, '');
       const isMainHeader = trimmedLine.startsWith('## ');
       
-      // Determine section icon and color based on header text
+      // section icon and color based on header text
       let SectionIcon = Circle;
       let iconColor = 'text-slate-500 dark:text-slate-400';
       
@@ -66,7 +64,6 @@ export const NoteRenderer: React.FC<NoteRendererProps> = ({ content }) => {
       );
     }
     
-    // Handle bold headers (**Text**)
     if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
       const headerText = trimmedLine.slice(2, -2);
       return (
@@ -79,12 +76,10 @@ export const NoteRenderer: React.FC<NoteRendererProps> = ({ content }) => {
       );
     }
     
-    // Handle numbered lists (1. 2. etc.)
     if (trimmedLine.match(/^\d+\.\s+/)) {
       const number = trimmedLine.match(/^(\d+)/)?.[1] || '1';
       const text = trimmedLine.replace(/^\d+\.\s+/, '');
       
-      // Check if the text contains **bold** formatting
       const boldPattern = /\*\*(.*?)\*\*/g;
       if (text.includes('**')) {
         const parts = text.split(boldPattern);
@@ -122,7 +117,7 @@ export const NoteRenderer: React.FC<NoteRendererProps> = ({ content }) => {
       );
     }
     
-    // Handle main bullet points (- or •)
+
     if (trimmedLine.match(/^[-•]\s+/) && !trimmedLine.match(/^\s{2,}[-•]/)) {
       const text = trimmedLine.substring(2).trim();
       
@@ -148,7 +143,7 @@ export const NoteRenderer: React.FC<NoteRendererProps> = ({ content }) => {
       );
     }
     
-    // Handle sub-bullets (indented with spaces)
+
     if (trimmedLine.match(/^\s{2,}[-•]\s+/)) {
       const indentLevel = Math.floor(trimmedLine.search(/[^\s]/) / 2);
       const text = trimmedLine.replace(/^\s*[-•]\s+/, '');
@@ -175,7 +170,7 @@ export const NoteRenderer: React.FC<NoteRendererProps> = ({ content }) => {
       );
     }
     
-    // Handle key points or highlights (starting with *)
+
     if (trimmedLine.startsWith('*') && !trimmedLine.startsWith('**')) {
       const text = trimmedLine.substring(1).trim();
       
@@ -203,7 +198,7 @@ export const NoteRenderer: React.FC<NoteRendererProps> = ({ content }) => {
       );
     }
     
-    // Handle quotes or important statements (starting with >)
+
     if (trimmedLine.startsWith('>')) {
       const text = trimmedLine.substring(1).trim();
       
@@ -231,7 +226,7 @@ export const NoteRenderer: React.FC<NoteRendererProps> = ({ content }) => {
       );
     }
     
-    // Handle bold text within paragraphs
+
     if (trimmedLine.includes('**')) {
       const parts = trimmedLine.split(/(\*\*[^*]+\*\*)/);
       return (
@@ -251,7 +246,7 @@ export const NoteRenderer: React.FC<NoteRendererProps> = ({ content }) => {
       );
     }
     
-    // Handle regular paragraphs
+
     if (trimmedLine && !trimmedLine.match(/^[-•*>]/)) {
       return (
         <div key={index} className="mb-3">
@@ -269,7 +264,7 @@ export const NoteRenderer: React.FC<NoteRendererProps> = ({ content }) => {
     <div className="space-y-2">
       {lines.map((line, index) => {
         const renderedLine = renderLine(line, index);
-        // Add extra spacing after headers
+
         if (line.trim().match(/^#{2,3}\s+/)) {
           return (
             <div key={index}>

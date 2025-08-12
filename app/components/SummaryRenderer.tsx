@@ -23,10 +23,10 @@ export const SummaryRenderer: React.FC<SummaryRendererProps> = ({ content }) => 
   const renderLine = (line: string, index: number) => {
     const trimmedLine = line.trim();
     
-    // Skip empty lines
+
     if (!trimmedLine) return null;
     
-    // Handle section headers (## or ###)
+
     if (trimmedLine.match(/^#{2,3}\s+/)) {
       const headerText = trimmedLine.replace(/^#{2,3}\s+/, '');
       const isMainHeader = trimmedLine.startsWith('## ');
@@ -63,7 +63,7 @@ export const SummaryRenderer: React.FC<SummaryRendererProps> = ({ content }) => 
       );
     }
     
-    // Handle bullet points (- bullets)
+
     if (trimmedLine.match(/^[-•]\s+/)) {
       const text = trimmedLine.replace(/^[-•]\s*/, '');
       
@@ -89,7 +89,7 @@ export const SummaryRenderer: React.FC<SummaryRendererProps> = ({ content }) => 
       );
     }
     
-    // Handle regular paragraphs with bold formatting
+
     if (trimmedLine && !trimmedLine.match(/^[#\-•*]/)) {
       // Process bold formatting
       const processedText = trimmedLine.split(/(\*\*[^*]+\*\*)/).map((part, partIndex) => {
@@ -119,7 +119,7 @@ export const SummaryRenderer: React.FC<SummaryRendererProps> = ({ content }) => 
     <div className="space-y-2">
       {lines.map((line, index) => {
         const renderedLine = renderLine(line, index);
-        // Add extra spacing after headers
+
         if (line.trim().match(/^#{2,3}\s+/)) {
           return (
             <div key={index}>

@@ -20,6 +20,11 @@ interface Article {
   wordCount?: number;
 }
 
+interface ErrorType {
+  data?: { error?: string };
+  status?: number;
+}
+
 export default function Home() {
   const [article, setArticle] = useState<Article>({ id: '', url: '', summary: '', notes: '' });
   const [allArticles, setAllArticles] = useState<Article[]>([]);
@@ -27,8 +32,8 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [isFetchingNotes, setIsFetchingNotes] = useState(false);
-  const [error, setError] = useState<any>(null);
-  const [notesError, setNotesError] = useState<any>(null);
+  const [error, setError] = useState<ErrorType | null>(null);
+  const [notesError, setNotesError] = useState<ErrorType | null>(null);
   
   const { isDark, toggleTheme } = useTheme();
   const { copyToClipboard, isCopied } = useCopyToClipboard();
@@ -36,8 +41,8 @@ export default function Home() {
   const saveArticleToStorage = (articles: Article[]) => {
     try {
       localStorage.setItem('articles', JSON.stringify(articles));
-    } catch (error) {
-      console.error('Failed to save to localStorage:', error);
+    } catch (storageError) {
+      console.error('Failed to save to localStorage:', storageError);
     }
   };
 
@@ -47,20 +52,18 @@ export default function Home() {
       try {
         const parsed = JSON.parse(articlesFromLocalStorage);
         if (Array.isArray(parsed)) {
-          // Migrate articles without IDs
-          const migratedArticles = parsed.map((article: any) => ({
+          const migratedArticles = parsed.map((article: Article) => ({
             ...article,
             id: article.id || `migrated-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
           }));
           setAllArticles(migratedArticles);
           
-          // Save migrated articles back to localStorage if any were migrated
           if (migratedArticles.some((article: Article) => article.id.startsWith('migrated-'))) {
             saveArticleToStorage(migratedArticles);
           }
         }
-      } catch (error) {
-        console.error('Failed to parse localStorage articles:', error);
+      } catch (parseError) {
+        console.error('Failed to parse localStorage articles:', parseError);
         localStorage.removeItem('articles');
       }
     }
@@ -90,7 +93,8 @@ export default function Home() {
 
       const data = await response.json();
       return { data, error: null };
-    } catch (error) {
+    } catch (networkError) {
+      console.error('Network error:', networkError);
       setError({ 
         data: { error: 'Network error occurred' },
         status: 500 
@@ -125,7 +129,8 @@ export default function Home() {
 
       const data = await response.json();
       return { data, error: null };
-    } catch (error) {
+    } catch (networkError) {
+      console.error('Network error:', networkError);
       setNotesError({ 
         data: { error: 'Network error occurred' },
         status: 500 
@@ -146,7 +151,6 @@ export default function Home() {
     setIsSubmitting(true);
 
     try {
-      // Check if article already exists
       const existingArticle = allArticles.find((item) => item.url === url);
       if (existingArticle) {
         setArticle(existingArticle);
@@ -155,7 +159,6 @@ export default function Home() {
         return;
       }
 
-      // Get summary
       const { data, error: summaryError } = await getSummary({ articleUrl: url });
       
       if (summaryError || !data?.summary) {
@@ -177,7 +180,6 @@ export default function Home() {
       setAllArticles(updatedArticles);
       saveArticleToStorage(updatedArticles);
 
-      // Generate notes
       await fetchBulletedNotes(data.summary, newArticle);
       
     } catch (error) {

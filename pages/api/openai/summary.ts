@@ -1,9 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { OpenAI } from 'openai';
+import { HfInference } from '@huggingface/inference';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 async function fetchWebContent(url: string): Promise<string> {
   try {
@@ -13,7 +11,6 @@ async function fetchWebContent(url: string): Promise<string> {
     }
     const html = await response.text();
     
-    // Basic text extraction (you might want to use a proper HTML parser)
     const textContent = html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
@@ -21,7 +18,7 @@ async function fetchWebContent(url: string): Promise<string> {
       .replace(/\s+/g, ' ')
       .trim();
     
-    return textContent.slice(0, 4000); // Limit content length
+    return textContent.slice(0, 4000);
   } catch (error) {
     console.error('Error fetching web content:', error);
     return '';
@@ -47,23 +44,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Unable to fetch content from URL' });
     }
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a helpful assistant that creates concise, informative summaries of web content. Focus on the main points and key information.'
-        },
-        {
-          role: 'user',
-          content: `Please provide a clear and concise summary of the following web content from ${url}:\n\n${content}`
-        }
-      ],
-      max_tokens: 200,
-      temperature: 0.3,
+    const summaryResponse = await hf.summarization({
+      model: 'facebook/bart-large-cnn',
+      inputs: content,
+      parameters: {
+        max_length: 200,
+        min_length: 50,
+        do_sample: false,
+      }
     });
 
-    const summary = response.choices[0]?.message?.content?.trim();
+    const summary = summaryResponse.summary_text;
     res.status(200).json({ summary });
   } catch (error) {
     console.error('Error fetching summary:', error);
