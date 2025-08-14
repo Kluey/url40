@@ -102,49 +102,41 @@ function formatBasicSummary(summaryText: string, url: string): string {
   // Split into sentences for better structure
   const sentences = cleanSummary.split(/[.!?]+/).filter(s => s.trim().length > 15);
   
-  let formatted = `## Overview\n`;
-  formatted += `This article from ${domain} provides comprehensive information on the topic. `;
+  let formatted = `This article from ${domain} provides comprehensive information on the topic. `;
   
   if (sentences.length > 0) {
-    formatted += `${sentences[0].trim()}.\n\n`;
+    formatted += `${sentences[0].trim()}. `;
+    
+    if (sentences.length > 1) {
+      formatted += `${sentences[1].trim()}. `;
+    }
+    
+    formatted += `The content explores various aspects of the subject matter, offering detailed insights and analysis.\n\n`;
+    
+    // Add main content
+    if (sentences.length > 2) {
+      formatted += `The article covers several important points. `;
+      sentences.slice(2, Math.min(5, sentences.length)).forEach(sentence => {
+        formatted += `${sentence.trim()}. `;
+      });
+    } else {
+      formatted += cleanSummary;
+    }
+    
+    formatted += `\n\nThis comprehensive coverage provides valuable insights for readers interested in understanding the topic more deeply. `;
+    formatted += `The information presented offers both theoretical understanding and practical applications, making it a useful resource for further exploration of the subject matter.`;
+    
   } else {
     formatted += `The content covers important aspects and key insights.\n\n`;
+    formatted += cleanSummary;
+    formatted += `\n\nThis article offers comprehensive coverage of the topic with actionable insights and detailed information for readers seeking to understand the subject matter better.`;
   }
-  
-  formatted += `## Key Points\n`;
-  if (sentences.length >= 3) {
-    sentences.slice(0, 4).forEach(sentence => {
-      formatted += `- ${sentence.trim()}\n`;
-    });
-  } else {
-    // Break down the summary into key points
-    const words = cleanSummary.split(' ');
-    const chunks = [];
-    for (let i = 0; i < words.length; i += 20) {
-      chunks.push(words.slice(i, i + 20).join(' '));
-    }
-    chunks.slice(0, 4).forEach(chunk => {
-      if (chunk.trim()) formatted += `- ${chunk.trim()}\n`;
-    });
-  }
-  
-  formatted += `\n## Main Content\n`;
-  formatted += `${cleanSummary}\n\n`;
-  
-  formatted += `## Key Takeaways\n`;
-  formatted += `- The article provides valuable insights on the topic\n`;
-  formatted += `- Important information is presented with supporting details\n`;
-  formatted += `- Readers can apply these insights to relevant situations\n\n`;
-  
-  formatted += `## Summary\n`;
-  formatted += `This content from ${domain} offers comprehensive coverage of the topic with actionable insights and detailed information.`;
   
   return formatted;
 }
 
 function generateFallbackSummary(content: string, url: string): string {
   const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 20);
-  const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 50);
   
   // Extract domain for context
   const domain = new URL(url).hostname.replace('www.', '');
@@ -182,110 +174,65 @@ function generateFallbackSummary(content: string, url: string): string {
     actionIndicators.some(indicator => 
       sentence.toLowerCase().includes(indicator)
     )
-  ).slice(0, 3);
+  ).slice(0, 2);
   
-  // Get opening context (first meaningful sentences)
+  // Get opening and key content
   const openingSentences = sentences.slice(0, 3);
-  
-  // Get concluding context (last meaningful sentences)  
+  const middleContent = sentences.slice(Math.floor(sentences.length * 0.3), Math.floor(sentences.length * 0.7));
   const concludingSentences = sentences.slice(-2);
   
-  // Build intelligent summary
-  let summary = `## Overview\n`;
-  summary += `This article from ${domain} provides comprehensive information on the topic. `;
+  // Build flowing comprehensive summary
+  let summary = `This article from ${domain} provides comprehensive information on the topic. `;
   
+  // Opening paragraph - context and introduction
   if (openingSentences.length > 0) {
-    const cleanOpening = openingSentences[0].trim();
-    summary += `${cleanOpening}. `;
+    summary += `${openingSentences[0].trim()}. `;
+    if (openingSentences.length > 1) {
+      summary += `${openingSentences[1].trim()}. `;
+    }
   }
   
-  if (openingSentences.length > 1) {
-    const cleanSecond = openingSentences[1].trim();
-    summary += `${cleanSecond}.\n\n`;
-  } else {
-    summary += `The content explores various aspects and provides detailed insights.\n\n`;
-  }
+  summary += `The content explores various aspects of the subject matter, offering detailed insights and analysis.\n\n`;
   
-  summary += `## Key Points\n`;
+  // Main content paragraph - key information and findings
   if (keySentences.length > 0) {
-    keySentences.forEach(sentence => {
-      summary += `- ${sentence.trim()}\n`;
+    summary += `Key findings and important information include several significant points. `;
+    keySentences.slice(0, 2).forEach(sentence => {
+      summary += `${sentence.trim()}. `;
     });
-  } else {
-    // Fallback to first few sentences if no key indicators found
-    sentences.slice(0, 4).forEach(sentence => {
-      summary += `- ${sentence.trim()}\n`;
+  } else if (middleContent.length > 0) {
+    summary += `The article covers important aspects of the topic. `;
+    middleContent.slice(0, 2).forEach(sentence => {
+      summary += `${sentence.trim()}. `;
     });
   }
   
-  summary += `\n## Main Content\n`;
-  if (paragraphs.length > 1) {
-    summary += `The article is structured into several key sections. `;
-    
-    // Extract main themes from paragraph starts
-    const themes = paragraphs.slice(0, 3).map(para => {
-      const firstSentence = para.split(/[.!?]+/)[0];
-      return firstSentence.trim();
-    }).filter(theme => theme.length > 10);
-    
-    if (themes.length > 0) {
-      summary += `Key themes include: ${themes.join(', ')}. `;
-    }
-    
-    // Add middle content summary
-    const middleIndex = Math.floor(sentences.length / 2);
-    if (sentences[middleIndex]) {
-      summary += `${sentences[middleIndex].trim()}`;
-    }
-  } else {
-    summary += `The content covers the topic comprehensively with detailed explanations and supporting information.`;
-  }
-  
+  // Add factual information if available
   if (factualSentences.length > 0) {
-    summary += `\n\n## Supporting Evidence\n`;
-    factualSentences.forEach(sentence => {
-      summary += `- ${sentence.trim()}\n`;
+    summary += `Supporting evidence and research findings demonstrate the significance of these insights. `;
+    factualSentences.slice(0, 2).forEach(sentence => {
+      summary += `${sentence.trim()}. `;
     });
   }
   
-  summary += `\n## Key Takeaways\n`;
+  summary += `\n\n`;
+  
+  // Concluding paragraph - implications and takeaways
+  summary += `The information presented offers valuable insights for readers interested in understanding the topic more deeply. `;
+  
   if (actionSentences.length > 0) {
     actionSentences.forEach(sentence => {
-      summary += `- ${sentence.trim()}\n`;
+      summary += `${sentence.trim()}. `;
     });
   } else if (concludingSentences.length > 0) {
     concludingSentences.forEach(sentence => {
-      summary += `- ${sentence.trim()}\n`;
+      summary += `${sentence.trim()}. `;
     });
-  } else {
-    summary += `- Review the complete article for comprehensive understanding\n`;
-    summary += `- Consider the context and source credibility\n`;
-    summary += `- Apply the insights to relevant situations\n`;
   }
   
-  summary += `\n## Summary\n`;
-  summary += `This content from ${domain} provides valuable insights on the topic. `;
-  summary += `The information is presented with supporting details and actionable guidance for readers.`;
+  summary += `This comprehensive coverage provides both theoretical understanding and practical applications, making it a valuable resource for anyone seeking to learn more about the subject matter.`;
   
   return summary;
-}
-
-function convertToMarkdownSummary(text: string): string {
-  let converted = text.trim();
-  
-  // Convert **Bold Headers** to ## Markdown Headers
-  converted = converted.replace(/\*\*(Overview|Key Points|Main Content|Important Details|Takeaways)\*\*/g, '## $1');
-  
-  // Ensure proper spacing around headers
-  converted = converted.replace(/\n+(##[^\n]*)\n*/g, '\n\n$1\n');
-  
-  // Clean up bullet points formatting
-  converted = converted.replace(/^[\s]*•\s*/gm, '- ');
-  
-  // Clean up multiple newlines
-  converted = converted.replace(/\n{3,}/g, '\n\n');
-  
-  return converted.trim();
 }
 
 export async function POST(request: NextRequest) {
@@ -332,39 +279,24 @@ export async function POST(request: NextRequest) {
       // Use a better model for structured text generation
       const enhancedSummary = await hf.textGeneration({
         model: 'google/flan-t5-large',
-        inputs: `Create a comprehensive, professional summary of this content. Structure it exactly as shown:
+        inputs: `Create a comprehensive, well-written summary of the following content. Write it as a flowing, informative article summary that covers all the key points naturally. 
 
-## Overview
-[2-3 sentences explaining what this content covers and its significance]
+Requirements:
+- Write 3-4 well-structured paragraphs
+- Include the most important information and insights
+- Mention specific details, facts, or examples when available
+- Make it informative and easy to read
+- Conclude with the key takeaways or significance
+- Write in a professional, engaging tone
 
-## Key Points
-- [Most important concept or finding #1]
-- [Most important concept or finding #2] 
-- [Most important concept or finding #3]
-- [Most important concept or finding #4]
+Do not use section headers or bullet points. Write it as a cohesive, flowing summary.
 
-## Main Content
-[2-3 paragraphs explaining the core ideas, arguments, evidence, and main themes in detail. Include specific details, examples, or data when available.]
+Content: "${initialSummary.summary_text}"
 
-## Supporting Evidence
-- [Specific facts, data, or examples mentioned]
-- [Research findings or expert opinions cited]
-- [Case studies or real-world applications]
-
-## Key Takeaways
-- [Actionable insight or lesson #1]
-- [Actionable insight or lesson #2] 
-- [Most important conclusion for readers]
-
-## Summary
-[1-2 sentences that capture the essence and practical value of this content]
-
-Content to summarize: "${initialSummary.summary_text}"
-
-Professional summary:`,
+Comprehensive summary:`,
         parameters: {
-          max_new_tokens: 1200,
-          temperature: 0.1,
+          max_new_tokens: 800,
+          temperature: 0.3,
           do_sample: true,
           return_full_text: false,
         }
@@ -372,7 +304,7 @@ Professional summary:`,
 
       let summary = enhancedSummary.generated_text;
       
-      if (!summary || summary.length < 200) {
+      if (!summary || summary.length < 150) {
         summary = formatBasicSummary(initialSummary.summary_text, url);
       } else {
         // Clean up and format the response
@@ -380,7 +312,7 @@ Professional summary:`,
         
         // Remove any response prefixes
         const prefixes = [
-          'Structured summary:', 'Professional summary:', 'Summary:', 
+          'Comprehensive summary:', 'Professional summary:', 'Summary:', 
           'Here is the summary:', 'The summary is:', 'Based on the content:'
         ];
         
@@ -390,11 +322,13 @@ Professional summary:`,
           }
         }
         
-        // Ensure proper markdown formatting
-        summary = convertToMarkdownSummary(summary);
+        // Clean up any unwanted formatting artifacts
+        summary = summary.replace(/\n{3,}/g, '\n\n');
+        summary = summary.replace(/^\s*-\s*/gm, ''); // Remove bullet points if any
+        summary = summary.replace(/^#+\s*/gm, ''); // Remove headers if any
         
         // If the AI response is still not good enough, use enhanced fallback
-        if (summary.length < 300 || !summary.includes('##')) {
+        if (summary.length < 200) {
           summary = formatBasicSummary(initialSummary.summary_text, url);
         }
       }
