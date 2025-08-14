@@ -1,39 +1,36 @@
-# URL.40 - Article Summarizer & Note Generator
+# URL.40 - Article Summarizer
 
-A modern web application that extracts content from URLs, generates AI-powered summaries, and creates organized bullet-point notes using **Hugging Face** AI models (completely free!).
+A modern web application that extracts content from URLs and generates AI-powered summaries using **Hugging Face** AI models
 
 ## Features
 
 - **URL Processing**: Automatically scrapes and extracts content from web articles
-- **AI Summarization**: Generates concise, informative summaries using Hugging Face models (BART, DialoGPT)
-- **Smart Notes**: Creates organized bullet-point notes with headers and key insights
+- **AI Summarization**: Generates concise, informative summaries using Hugging Face models
 - **Local Storage**: Saves your article history for quick access
-- **Free AI**: Uses Hugging Face's free inference API - no paid subscriptions required!
+- **Dark/Light Mode**: Toggle between themes with persistent preference storage
+- **Copy to Clipboard**: Easy sharing of summaries
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
 
 ## Usage
 
 1. **Paste a URL** - Enter any article URL in the input field
-2. **Get Summary** - The app automatically extracts content and generates a summary
-3. **View Notes** - Organized bullet-point notes are created from the summary
-4. **Access History** - Previously processed articles are saved locally for quick access
-5. **Copy URLs** - Click the copy icon to copy article URLs to clipboard
+2. **Get Summary** - The app automatically extracts content and generates a comprehensive summary
+3. **Access History** - Previously processed articles are saved locally for quick access
+4. **Copy Content** - Click the copy icon to copy summaries or URLs to clipboard
 
 ## API Endpoints
 
-- `POST /api/summarize` - Generates article summaries using Hugging Face BART model
-- `POST /api/notes` - Creates bullet-point notes from summaries using DialoGPT
+- `POST /api/summarize` - Generates article summaries using Hugging Face models
 
 ## Technology Stack
 
 - **Frontend**: Next.js 15, React 19, TypeScript
 - **Styling**: Tailwind CSS
-- **State Management**: Redux Toolkit
-- **AI**: Hugging Face Transformers (BART, DialoGPT)
+- **AI**: Hugging Face Transformers
 - **Web Scraping**: Cheerio
 - **Icons**: Lucide React, FontAwesome
 
 ## AI Models Used
 
-- **Summarization**: `facebook/bart-large-cnn` - Optimized for news article summarization
-- **Note Generation**: `microsoft/DialoGPT-medium` - Generates structured conversational text
+- **Summarization**: `google/flan-t5-large` - Optimized for structured text generation and summarization
 - **Fallback**: Local text processing when AI services are unavailable

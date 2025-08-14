@@ -6,7 +6,6 @@ import { ExternalLink } from 'lucide-react';
 interface ArticleCardProps {
   url: string;
   summary: string;
-  notes: string;
   onClick: () => void;
   onCopy: () => void;
   isCopied: boolean;
@@ -15,7 +14,6 @@ interface ArticleCardProps {
 export const ArticleCard: React.FC<ArticleCardProps> = ({
   url,
   summary,
-  notes,
   onClick,
   onCopy,
   isCopied
@@ -65,7 +63,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
       </p>
       
       <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-        <span>{notes ? 'Summary & Notes' : 'Summary only'}</span>
+        <span>Article Summary</span>
         <span className="opacity-0 group-hover:opacity-100 transition-opacity">
           Click to view →
         </span>

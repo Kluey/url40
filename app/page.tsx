@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, FormEvent, KeyboardEvent } from 'react';
-import { CornerDownLeft, FileText, Clock, Trash2, Github, ExternalLink, Copy, Check } from 'lucide-react';
+import { CornerDownLeft, FileText, Clock, Trash2, Github, Copy, Check } from 'lucide-react';
 import { useTheme } from './hooks/useTheme';
 import { useCopyToClipboard } from './hooks/useCopyToClipboard';
 import { LoadingSpinner } from './components/LoadingSpinner';
@@ -8,14 +8,12 @@ import { ErrorMessage } from './components/ErrorMessage';
 import { EmptyState } from './components/EmptyState';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ArticleCard } from './components/ArticleCard';
-import { NoteRenderer } from './components/NoteRenderer';
 import { SummaryRenderer } from './components/SummaryRenderer';
 
 interface Article {
   id: string;
   url: string;
   summary: string;
-  notes: string;
   timestamp?: string;
   wordCount?: number;
 }
@@ -26,14 +24,12 @@ interface ErrorType {
 }
 
 export default function Home() {
-  const [article, setArticle] = useState<Article>({ id: '', url: '', summary: '', notes: '' });
+  const [article, setArticle] = useState<Article>({ id: '', url: '', summary: '' });
   const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [url, setUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
-  const [isFetchingNotes, setIsFetchingNotes] = useState(false);
   const [error, setError] = useState<ErrorType | null>(null);
-  const [notesError, setNotesError] = useState<ErrorType | null>(null);
   
   const { isDark, toggleTheme } = useTheme();
   const { copyToClipboard, isCopied } = useCopyToClipboard();
@@ -105,42 +101,6 @@ export default function Home() {
     }
   };
 
-  const getBulletedNotes = async (summary: string) => {
-    try {
-      setIsFetchingNotes(true);
-      setNotesError(null);
-      
-      const response = await fetch('/api/notes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ summary }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        setNotesError({ 
-          data: errorData,
-          status: response.status 
-        });
-        return { data: null, error: true };
-      }
-
-      const data = await response.json();
-      return { data, error: null };
-    } catch (networkError) {
-      console.error('Network error:', networkError);
-      setNotesError({ 
-        data: { error: 'Network error occurred' },
-        status: 500 
-      });
-      return { data: null, error: true };
-    } finally {
-      setIsFetchingNotes(false);
-    }
-  };
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
@@ -170,7 +130,6 @@ export default function Home() {
         id: `article-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         url,
         summary: data.summary,
-        notes: '',
         timestamp: new Date().toISOString(),
         wordCount: data.wordCount
       };
@@ -179,35 +138,11 @@ export default function Home() {
       const updatedArticles = [newArticle, ...allArticles];
       setAllArticles(updatedArticles);
       saveArticleToStorage(updatedArticles);
-
-      await fetchBulletedNotes(data.summary, newArticle);
       
     } catch (error) {
       console.error('Error processing article:', error);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const fetchBulletedNotes = async (summary: string, currentArticle: Article) => {
-    try {
-      const notesResponse = await getBulletedNotes(summary);
-      
-      if (notesResponse.data?.result) {
-        const updatedArticle = { ...currentArticle, notes: notesResponse.data.result };
-        setArticle(updatedArticle);
-        
-        // Update the articles array using the callback pattern to ensure we have the latest state
-        setAllArticles(prevArticles => {
-          const updatedArticles = prevArticles.map(item => 
-            item.id === currentArticle.id ? updatedArticle : item
-          );
-          saveArticleToStorage(updatedArticles);
-          return updatedArticles;
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching notes:', error);
     }
   };
 
@@ -226,7 +161,7 @@ export default function Home() {
     if (window.confirm('Are you sure you want to clear all article history?')) {
       localStorage.removeItem('articles');
       setAllArticles([]);
-      setArticle({ id: '', url: '', summary: '', notes: '' });
+      setArticle({ id: '', url: '', summary: '' });
       setUrl('');
     }
   };
@@ -273,11 +208,10 @@ export default function Home() {
         <div className="text-center mb-8">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Paste <span className="text-red-600">Link</span>,
-            Get <span className="text-red-600">Summary</span>,
-            Get <span className="text-red-600">Notes</span>
+            Get <span className="text-red-600">Summary</span>
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Transform any article into actionable insights with AI-powered summarization and note-taking
+            Transform any article into comprehensive summaries with AI-powered analysis
           </p>
         </div>
 
@@ -311,7 +245,7 @@ export default function Home() {
         </div>
 
         {/* Results Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="max-w-4xl mx-auto mb-8">
           {/* Summary Panel */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -372,43 +306,6 @@ export default function Home() {
               )}
             </div>
           </div>
-
-          {/* Notes Panel */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
-                  <ExternalLink className="w-5 h-5 mr-2 text-red-600" />
-                  Notes
-                </h3>
-                {article.notes && (
-                  <button
-                    onClick={() => handleCopy(article.notes, 'notes')}
-                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                    title="Copy notes"
-                  >
-                    {isCopied('notes') ? (
-                      <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="p-6 h-96 overflow-y-auto scrollbar-custom">
-              {isFetchingNotes ? (
-                <LoadingSpinner text="Generating notes..." />
-              ) : notesError ? (
-                <ErrorMessage
-                  title="Failed to generate notes"
-                  message="Please try again or contact support if the problem persists."
-                />
-              ) : (
-                <NoteRenderer content={article.notes} />
-              )}
-            </div>
-          </div>
         </div>
 
         {/* History Section */}
@@ -433,7 +330,6 @@ export default function Home() {
                   key={item.id}
                   url={item.url}
                   summary={item.summary}
-                  notes={item.notes}
                   onClick={() => selectArticle(item)}
                   onCopy={() => handleCopy(item.url, item.url)}
                   isCopied={isCopied(item.url)}
