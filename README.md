@@ -1,14 +1,13 @@
 # URL.40 - Article Summarizer & Note Generator
 
-A modern web application that extracts content from URLs, generates AI-powered summaries, and creates organized bullet-point notes using **Hugging Face** AI models (completely free!).
+A modern web application that extracts content from URLs, generates AI-powered summaries, and creates organized bullet-point notes using **Hugging Face** AI models.
 
 ## Features
 
 - **URL Processing**: Automatically scrapes and extracts content from web articles
-- **AI Summarization**: Generates concise, informative summaries using Hugging Face models (BART, DialoGPT)
+- **AI Summarization**: Generates informative summaries using Hugging Face models (BART, DialoGPT)
 - **Smart Notes**: Creates organized bullet-point notes with headers and key insights
-- **Local Storage**: Saves your article history for quick access
-- **Free AI**: Uses Hugging Face's free inference API - no paid subscriptions required!
+- **Local Storage**: Saves article history for quick access
 
 ## Usage
 
