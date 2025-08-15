@@ -1,12 +1,11 @@
 # URL.40 - Article Summarizer
 
-A modern web application that extracts content from URLs, generates AI-powered summaries, and creates organized bullet-point notes using **Hugging Face** AI models.
+A modern web application that extracts content from URLs, generates AI-powered summaries using **Hugging Face** AI models.
 
 ## Features
 
 - **URL Processing**: Automatically scrapes and extracts content from web articles
 - **AI Summarization**: Generates concise, informative summaries using Hugging Face models
-- **Smart Notes**: Creates organized bullet-point notes with headers and key insights
 - **Local Storage**: Saves your article history for quick access.
 
 ## Usage
