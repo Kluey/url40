@@ -5,7 +5,7 @@ A modern web application that extracts content from URLs, generates AI-powered s
 ## Features
 
 - **URL Processing**: Automatically scrapes and extracts content from web articles
-- **AI Summarization**: Generates concise, informative summaries using Hugging Face models (BART, DialoGPT)
+- **AI Summarization**: Generates concise, informative summaries using Hugging Face models
 - **Smart Notes**: Creates organized bullet-point notes with headers and key insights
 - **Local Storage**: Saves your article history for quick access.
 
